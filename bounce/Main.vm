@@ -1,0 +1,138 @@
+function Main.main 0
+push constant 200
+pop static 0 	//x (static 0) = 200
+push constant 20
+pop static 1	//y (static 1) = 20
+push constant 10 
+pop static 2	//Vx (static 2) = 10
+push constant 10
+pop static 3	//Vy (static 3) = 10
+label WHILE
+push constant 60
+call Sys.wait 1
+pop temp 0
+call Main.update 0
+pop temp 0
+call Main.draw 0
+pop temp 0
+goto WHILE
+return
+
+function Main.update 0
+push static 0				//if x + Vx + 10 > 510
+push static 2
+add
+push constant 10
+add
+push constant 510
+gt
+not
+if-goto ELSEIF0
+	push constant 1022		//x = 1022 - x - Vy - 20
+	push static 0
+	sub
+	push static 2
+	sub
+	push constant 20
+	sub
+	pop static 0
+	push static 2			//Vx = -Vx
+	neg
+	pop static 2
+	goto END0
+label ELSEIF0
+push static 0				//else if x + Vx - 10 < 1
+push static 2
+add
+push constant 10
+sub
+push constant 1
+lt
+not
+if-goto ELSE0
+	push constant 20		//x = 20 - Vx - x
+	push static 2
+	sub
+	push static 0
+	sub
+	pop static 0
+	push static 2			//Vx = -Vx
+	neg
+	pop static 2
+	goto END0
+label ELSE0
+	push static 0			//else
+	push static 2			//x += Vx
+	add
+	pop static 0
+label END0
+push static 1				//if y + Vy + 10 > 254
+push static 3
+add
+push constant 10
+add
+push constant 254
+gt
+not
+if-goto ELSEIF1
+	push constant 510		//y = 510 - y - Vy - 20
+	push static 1
+	sub
+	push static 3
+	sub
+	push constant 20
+	sub
+	pop static 1
+	push static 3			//Vy = -Vy
+	neg
+	pop static 3
+	goto END1
+label ELSEIF1
+push static 1				//else if y + Vy - 10 < 1
+push static 3
+add
+push constant 10
+sub
+push constant 1
+lt
+not
+if-goto ELSE1
+	push constant 20			//y = 20 - Vy - y
+	push static 3
+	sub
+	push static 1
+	sub
+	pop static 1
+	push static 3				//Vy = -Vy
+	neg
+	pop static 3
+	goto END1
+label ELSE1
+	push static 1
+	push static 3
+	add
+	pop static 1
+label END1
+push constant 0
+return
+
+function Main.draw 0
+call Screen.clearScreen 0
+pop temp 0
+push static 0
+push static 1
+push constant 10
+call Screen.drawCircle 3
+pop temp 0
+push constant 0
+return
+
+
+
+
+
+
+
+
+
+

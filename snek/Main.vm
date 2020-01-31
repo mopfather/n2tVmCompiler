@@ -1,0 +1,449 @@
+function Main.main 3
+call Main.init 0
+pop temp 0
+label WHILE
+push static 5			//if !running then return
+if-goto GAME
+push constant 0
+return
+label GAME
+	push constant 60
+	pop local 0
+label RESPONSIVE_INPUT
+	push local 0
+	push constant 0
+	lt
+if-goto END_INPUT
+	call Keyboard.keyPressed 0
+	pop local 2
+	push local 2
+	push constant 0
+	eq
+	if-goto NO_INPUT
+	push local 2
+	pop local 1
+label NO_INPUT
+	push constant 1
+	call Sys.wait 1
+	pop temp 0
+	push local 0
+	push constant 1
+	sub
+	pop local 0
+	goto RESPONSIVE_INPUT
+label END_INPUT
+	push local 1
+	call Main.input 1
+	pop temp 0
+	call Main.update 0
+	pop temp 0
+	call Main.draw 0
+	pop temp 0
+goto WHILE
+
+
+function Main.init 0
+push constant 4
+pop static 0			//x = 4 (static 0)
+push constant 4
+pop static 1			//y = 4 (static 1)
+push constant 1000
+call Memory.alloc 1
+pop static 2			//tail address (static 2)
+push constant 3			
+pop static 3			//dir = 3 (static 3) 
+push constant 0
+pop static 4			//length = 0 (static 4)
+push constant 1
+pop static 5			//running = 1 (static 5)
+push constant 10
+pop static 6			//fruitX = 10 (static 6)
+push constant 10
+pop static 7			//fruitY = 10 (static 7)
+push constant 0
+pop static 8			//seedX = 0 (static 8)
+push constant 0
+pop static 9			//seedY = 0 (static 9)
+push constant 0
+return
+
+
+function Main.input 0
+push argument 0
+push constant 130
+eq
+not
+if-goto DOWN				//LEFT = 0, DOWN = 1, UP = 2, RIGHT = 3
+	push static 3
+	push constant 3
+	eq
+	if-goto END0
+	push constant 0
+	pop static 3
+	goto END0
+label DOWN
+push argument 0
+push constant 133
+eq
+not
+if-goto UP
+	push static 3
+	push constant 2
+	eq
+	if-goto END0
+	push constant 1
+	pop static 3
+	goto END0
+label UP
+push argument 0
+push constant 131
+eq
+not
+if-goto RIGHT
+	push static 3
+	push constant 1
+	eq
+	if-goto END0
+	push constant 2
+	pop static 3
+	goto END0
+label RIGHT
+push argument 0
+push constant 132
+eq
+not
+if-goto END0
+	push static 3
+	push constant 0
+	eq
+	if-goto END0
+	push constant 3
+	pop static 3
+label END0
+push constant 0
+return
+
+
+function Main.update 5
+push constant 2 			//update seed
+push static 8
+add
+pop static 8
+push constant 3
+push static 9
+add
+pop static 9
+
+push static 0				//old head position
+pop local 2
+push static 1
+pop local 3
+
+push static 3				//new head position
+push constant 0
+eq
+not
+if-goto DOWN
+	push static 0
+	push constant 1
+	sub
+	pop static 0
+	goto END0
+label DOWN
+push static 3
+push constant 1
+eq
+not
+if-goto UP
+	push static 1
+	push constant 1
+	add
+	pop static 1
+	goto END0
+label UP
+push static 3
+push constant 2
+eq
+not
+if-goto RIGHT
+	push static 1
+	push constant 1
+	sub
+	pop static 1
+	goto END0
+label RIGHT
+	push static 0
+	push constant 1
+	add
+	pop static 0
+label END0
+
+push static 0				//border overflow
+push constant 0
+lt
+not
+if-goto RIGHT_BORDER
+	push constant 31
+	pop static 0
+	goto TOPBOT_BORDER
+label RIGHT_BORDER	
+push static 0
+push constant 32
+eq
+not
+if-goto TOPBOT_BORDER
+	push constant 0
+	pop static 0
+label TOPBOT_BORDER
+push static 1
+push constant 0
+lt
+not
+if-goto BOTTOM_BORDER
+	push constant 15
+	pop static 1
+	goto END1
+label BOTTOM_BORDER
+push static 1
+push constant 16
+eq
+not
+if-goto END1
+	push constant 0
+	pop static 1
+label END1
+
+label FRUIT
+push static 0				//eat fruit?
+push static 6
+eq
+push static 1
+push static 7
+eq
+and
+not
+if-goto END2
+	push static 4
+	push constant 1
+	add
+	pop static 4
+	push static 8
+	push constant 32
+	call Main.modulo 2
+	pop static 6
+	push static 9
+	push constant 16
+	call Main.modulo 2
+	pop static 7
+label END2
+
+push static 4				//tail position
+push static 4
+add
+push constant 3
+sub
+pop local 0
+label SNEK_TAIL
+push local 0
+push constant 0
+lt
+if-goto ENDTAIL_UPDATE
+	push static 2
+	push local 0
+	add
+	pop pointer 1
+	push that 0
+	pop that 2
+	push local 0
+	push constant 1
+	sub
+	pop local 0
+	goto SNEK_TAIL
+label ENDTAIL_UPDATE
+push static 2
+pop pointer 1
+push local 2
+pop that 0
+push local 3
+pop that 1
+
+label FRUITONSNEK
+push static 0				//fruit spawned on head?
+push static 6
+eq
+push static 1
+push static 7
+eq
+and
+if-goto NEW_FRUIT
+push static 4				//fruit spawned on tail?
+push static 4
+add
+push constant 2
+sub
+pop local 4
+label FRUIT_TAIL_CHECK
+push local 4
+push constant 0
+lt
+if-goto SNEK_CHECK
+	push static 2
+	push local 4
+	add
+	pop pointer 1
+	push local 4
+	push constant 2
+	sub
+	pop local 4
+	push that 0
+	push static 6
+	eq
+	push that 1
+	push static 7
+	eq
+	and
+	if-goto NEW_FRUIT
+	goto FRUIT_TAIL_CHECK
+
+label NEW_FRUIT
+push static 8
+push constant 5
+add
+pop static 8
+push static 9
+push constant 7
+add
+pop static 9
+push static 8
+push constant 32
+call Main.modulo 2
+pop static 6
+push static 9
+push constant 16
+call Main.modulo 2
+pop static 7
+goto FRUITONSNEK
+
+
+label SNEK_CHECK
+push static 4				//snek ded?
+push static 4
+add
+push constant 2
+sub
+pop local 1
+label SNEK_TAIL_CHECK
+push local 1
+push constant 0
+lt
+if-goto SNEK_HEAD_CHECK
+	push static 2
+	push local 1
+	add
+	pop pointer 1
+	push local 1
+	push constant 2
+	sub
+	pop local 1
+	push that 0
+	push static 0
+	eq
+	push that 1
+	push static 1
+	eq
+	and
+	not
+	if-goto SNEK_TAIL_CHECK
+	push constant 0
+	pop static 5
+	push constant 0
+	return
+label SNEK_HEAD_CHECK
+push static 2
+pop pointer 1
+push that 0
+push static 0
+eq
+push that 1
+push static 1
+eq
+and
+if-goto DED
+push constant 0
+return
+label DED
+push constant 0
+pop static 5
+push constant 0
+return
+
+
+function Main.modulo 0
+push argument 0
+push argument 0
+push argument 1
+call Math.divide 2
+push argument 1
+call Math.multiply 2
+sub
+return
+
+
+
+function Main.rect 0
+push argument 0
+push constant 16
+call Math.multiply 2
+pop argument 0
+push argument 0
+push argument 1
+push constant 16
+call Math.multiply 2
+pop argument 1
+push argument 1
+push argument 0
+push constant 15
+add
+push argument 1
+push constant 15
+add
+call Screen.drawRectangle 4
+return
+
+
+function Main.draw 2
+call Screen.clearScreen 0
+pop temp 0
+push static 0
+push static 1
+call Main.rect 2
+pop temp 0
+push static 4
+push static 4
+add
+push constant 1
+sub
+pop local 1
+label DRAW_SNEK
+push local 0
+push local 1
+gt
+if-goto END3
+	push static 2
+	push local 0
+	add
+	pop pointer 1
+	push that 0
+	push that 1
+	call Main.rect 2
+	pop temp 0
+	push local 0
+	push constant 2
+	add
+	pop local 0
+	goto DRAW_SNEK
+label END3
+push static 6
+push static 7
+call Main.rect 2
+return

@@ -1,0 +1,53 @@
+function Main.main 0
+push constant 2
+pop static 0	//i = static 0
+label FOR_i
+push static 0
+push constant 100
+lt
+not
+if-goto END0
+push constant 0
+not
+pop static 1	//prime = static 1
+push constant 2
+pop static 2	//j = static 2
+label FOR_j
+push static 2
+push static 0
+lt
+not
+if-goto END1
+push static 0
+push static 2
+call Math.divide 2
+push static 2
+call Math.multiply 2
+push static 0	
+eq
+not				//i % j != 0
+if-goto IF_FALSE0
+push constant 0
+pop static 1
+label IF_FALSE0
+push static 2
+push constant 1
+add
+pop static 2
+goto FOR_j
+label END1
+push static 1
+not
+if-goto IF_FALSE1
+push static 0
+call Output.printInt 1
+push constant 32
+call Output.printChar 1
+label IF_FALSE1
+push static 0
+push constant 1
+add
+pop static 0
+goto FOR_i
+label END0	
+return
