@@ -10,7 +10,7 @@
 #define DIR_SEPARATOR_C '\\'
 #define DIR_SEPARATOR_S "\\"
 
-#elif __linux
+#elif __linux__
 #include <sys/stat.h>
 #define DIR_SEPARATOR_C '/'
 #define DIR_SEPARATOR_S "/"
